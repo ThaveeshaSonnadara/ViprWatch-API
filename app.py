@@ -1,3 +1,4 @@
+import os
 import numpy as np
 from PIL import Image
 from flask import Flask, jsonify, request
@@ -5,6 +6,9 @@ from keras.models import load_model
 from inference import get_roboflow_model
 from dotenv import load_dotenv
 from flask_cors import CORS
+
+load_dotenv(dotenv_path='.env')
+load_dotenv(dotenv_path='.flaskenv')
 
 app = Flask(__name__)
 
@@ -48,6 +52,9 @@ def index():
         predicted_class = np.argmax(prediction)
         confidence_level = np.max(prediction)
 
+        if os.path.exists(img_path):
+            os.remove(img_path)
+
         # Return JSON response
 
         if confidence_level >= 0.80:
@@ -66,5 +73,4 @@ def index():
 
 
 if __name__ == '__main__':
-    load_dotenv()
     app.run()
