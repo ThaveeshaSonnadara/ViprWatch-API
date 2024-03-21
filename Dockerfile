@@ -1,4 +1,4 @@
-FROM python:3.9.17-bookwarm
+FROM python:3.9-slim
 
 ENV PYTHONBUFFERED True
 
