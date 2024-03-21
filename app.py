@@ -11,7 +11,7 @@ app = Flask(__name__)
 
 app.config.from_pyfile('settings.py')
 
-model_phase2 = load_model('model_for_10snakes.h5')
+model = load_model('model_for_10snakes.h5')
 
 
 @app.route('/', methods=['POST'])
@@ -26,42 +26,33 @@ def index():
     with open(img_path, "wb") as img:
         img.write(img_bytes)
 
-    results = model_phase1.infer(img_path, confidence=0.25)
-    print(results)
+    # Load image and convert to NumPy array
+    img = Image.open(img_path)
+    img = img.resize((224, 224))
+    img_array = np.array(img)
+    img_array = np.expand_dims(img_array, axis=0)
+    img_array = img_array.astype('float32') / 255.
 
-    if len(results) > 0 and len(results[0].predictions) > 0 and results[0].predictions[0].class_name == 'Snake':
-        # Load image and convert to NumPy array
-        img = Image.open(img_path)
-        img = img.resize((224, 224))
-        img_array = np.array(img)
-        img_array = np.expand_dims(img_array, axis=0)
-        img_array = img_array.astype('float32') / 255.
+    # Make prediction
 
-        # Make prediction
+    prediction = model.predict(img_array)
+    print(prediction)
 
-        prediction = model_phase2.predict(img_array)
-        print(prediction)
+    # Convert prediction to class label and confidence level
+    predicted_class = np.argmax(prediction)
+    confidence_level = np.max(prediction)
 
-        # Convert prediction to class label and confidence level
-        predicted_class = np.argmax(prediction)
-        confidence_level = np.max(prediction)
+    if os.path.exists(img_path):
+        os.remove(img_path)
 
-        if os.path.exists(img_path):
-            os.remove(img_path)
+    # Return JSON response
 
-        # Return JSON response
-
-        if confidence_level >= 0.80:
-            response = {'predicted_class': int(predicted_class), 'confidence_level': float(confidence_level)}
-            print(response)
-            return jsonify(response)
-        else:
-            response = {'predicted_class': -2, 'confidence_level': 0.05}
-            print(response)
-            return jsonify(response)
-
+    if confidence_level >= 0.80:
+        response = {'predicted_class': int(predicted_class), 'confidence_level': float(confidence_level)}
+        print(response)
+        return jsonify(response)
     else:
-        response = {'predicted_class': -1, 'confidence_level': 0.05}
+        response = {'predicted_class': -2, 'confidence_level': 0.05}
         print(response)
         return jsonify(response)
 
