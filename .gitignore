@@ -1,5 +1,4 @@
 .env
-.flaskenv
 model_for_10snakes.h5
 
 Dockerfile

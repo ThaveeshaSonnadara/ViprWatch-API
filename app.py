@@ -3,20 +3,14 @@ import numpy as np
 from PIL import Image
 from flask import Flask, jsonify, request
 from keras.models import load_model
-from inference import get_roboflow_model
 from dotenv import load_dotenv
-from flask_cors import CORS
 
 load_dotenv(dotenv_path='.env')
-load_dotenv(dotenv_path='.flaskenv')
 
 app = Flask(__name__)
 
-CORS(app)
-
 app.config.from_pyfile('settings.py')
 
-model_phase1 = get_roboflow_model(model_id="snake-detection/2")
 model_phase2 = load_model('model_for_10snakes.h5')
 
 
